@@ -1,3 +1,5 @@
+---
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -45,7 +47,7 @@ return {"operation": "multiply", "a": a, "b": b, "result": a * b}
 
 @app.get("/divide/{a}/{b}")
 def divide(a: float, b: float):
-"""Divides a by b. Handles division by zero gracefully."""
+"""Divides a by b. Handles division by zero with a 422 error."""
 if b == 0.0:
 raise HTTPException(status_code=422, detail="Error: Cannot divide by zero.")
 return {"operation": "divide", "a": a, "b": b, "result": a / b}
@@ -62,9 +64,14 @@ return {"operation": "power", "base": base, "exponent": exponent, "result": base
 
 @app.get("/tip/{bill}/{percentage}")
 def tip_calculator(bill: float, percentage: float):
-"""Calculates the tip amount based on the bill and tip percentage."""
+"""Calculates tip. Returns 422 if inputs are negative."""
 if bill < 0 or percentage < 0:
 raise HTTPException(status_code=422, detail="Error: Bill and percentage cannot be negative.")
 
+```
 tip_amount = bill * (percentage / 100)
 return {"operation": "tip", "bill": bill, "percentage": percentage, "result": round(tip_amount, 2)}
+
+```
+
+---
