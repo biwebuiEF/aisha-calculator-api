@@ -1,8 +1,7 @@
----
-
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 app = FastAPI()
 
@@ -11,6 +10,18 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 return JSONResponse(
 status_code=422,
 content={"detail": "Error: All arguments must be valid numbers."}
+)
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_404_handler(request: Request, exc: StarletteHTTPException):
+if exc.status_code == 404:
+return JSONResponse(
+status_code=422,
+content={"detail": "Error: Missing parameter or invalid route."}
+)
+return JSONResponse(
+status_code=exc.status_code,
+content={"detail": exc.detail}
 )
 
 @app.get("/")
@@ -55,10 +66,5 @@ def tip_calculator(bill: float, percentage: float):
 if bill < 0 or percentage < 0:
 raise HTTPException(status_code=422, detail="Error: Bill and percentage cannot be negative.")
 
-```
 tip_amount = bill * (percentage / 100)
 return {"operation": "tip", "bill": bill, "percentage": percentage, "result": round(tip_amount, 2)}
-
-```
-
----
